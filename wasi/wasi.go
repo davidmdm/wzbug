@@ -9,8 +9,6 @@ import (
 
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
-
-	"github.com/davidmdm/x/xerr"
 )
 
 type ExecParams struct {
@@ -34,9 +32,7 @@ func Execute(ctx context.Context, params ExecParams) (output []byte, err error) 
 	}
 
 	runtime := wazero.NewRuntimeWithConfig(ctx, cfg)
-	defer func() {
-		err = xerr.MultiErrFrom("", err, runtime.Close(ctx))
-	}()
+	defer runtime.Close(ctx)
 
 	wasi_snapshot_preview1.MustInstantiate(ctx, runtime)
 
@@ -60,6 +56,7 @@ func Execute(ctx context.Context, params ExecParams) (output []byte, err error) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to compile module: %w", err)
 	}
+	defer compiledModule.Close(ctx)
 
 	fmt.Println("[debug] module compiled")
 	fmt.Println("[debug] instantiating module...")

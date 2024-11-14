@@ -4,7 +4,7 @@ go 1.23.3
 
 require (
 	github.com/davidmdm/x/xerr v0.0.3
-	github.com/tetratelabs/wazero v1.6.0
+	github.com/tetratelabs/wazero v1.8.1
 	github.com/yokecd/yoke v0.1.3-0.20241112021843-df8018f025a6
 	golang.org/x/term v0.25.0
 	k8s.io/api v0.31.2
