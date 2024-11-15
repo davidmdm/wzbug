@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"reflect"
 	"strconv"
 
 	"golang.org/x/term"
@@ -18,9 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/yaml"
 
-	"github.com/yokecd/yoke/pkg/apis/airway/v1alpha1"
 	"github.com/yokecd/yoke/pkg/flight"
-	"github.com/yokecd/yoke/pkg/openapi"
 )
 
 type Config struct {
@@ -48,75 +45,16 @@ func run() error {
 		}
 	}
 
-	names := apiextensionsv1.CustomResourceDefinitionNames{
-		Plural:   "airways",
-		Singular: "airway",
-		Kind:     "Airway",
-	}
-
-	group := "yoke.cd"
-
-	crd := apiextensionsv1.CustomResourceDefinition{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "CustomResourceDefinition",
-			APIVersion: "apiextensions.k8s.io/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: names.Plural + "." + group,
-		},
-		Spec: apiextensionsv1.CustomResourceDefinitionSpec{
-			Group: group,
-			Names: names,
-			Scope: apiextensionsv1.ClusterScoped,
-			Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
-				{
-					Name:    "v1alpha1",
-					Served:  true,
-					Storage: true,
-					Subresources: &apiextensionsv1.CustomResourceSubresources{
-						Status: &apiextensionsv1.CustomResourceSubresourceStatus{},
-					},
-					Schema: &apiextensionsv1.CustomResourceValidation{
-						OpenAPIV3Schema: openapi.SchemaFrom(reflect.TypeOf(v1alpha1.Airway{})),
-					},
-				},
-			},
-		},
-	}
+	crd := apiextensionsv1.CustomResourceDefinition{}
 
 	account := corev1.ServiceAccount{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "ServiceAccount",
-			APIVersion: "v1",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-atc-service-account", flight.Release()),
 			Namespace: flight.Namespace(),
 		},
 	}
 
-	binding := rbacv1.ClusterRoleBinding{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "ClusterRoleBinding",
-			APIVersion: "rbac.authorization.k8s.io/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-atc-cluster-role-binding", flight.Release()),
-			Namespace: flight.Namespace(),
-		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind:      account.Kind,
-				Name:      account.Name,
-				Namespace: account.Namespace,
-			},
-		},
-		RoleRef: rbacv1.RoleRef{
-			APIGroup: rbacv1.GroupName,
-			Kind:     "ClusterRole",
-			Name:     "cluster-admin",
-		},
-	}
+	binding := rbacv1.ClusterRoleBinding{}
 
 	labels := map[string]string{}
 	for k, v := range cfg.Labels {
