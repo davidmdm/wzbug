@@ -6,8 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime/debug"
-	"strings"
-	"time"
 
 	"github.com/davidmdm/wzbug/wasi"
 )
@@ -42,21 +40,22 @@ func run() error {
 		return fmt.Errorf("failed to read wasm file: %w", err)
 	}
 
-	start := time.Now()
-
-	out, err := wasi.Execute(context.Background(), wasi.ExecParams{
+	mod, err := wasi.Compile(context.Background(), wasi.CompileParams{
 		Wasm:     wasm,
-		Name:     "foo",
-		Stdin:    strings.NewReader("version: local\n"),
 		CacheDir: "./cache",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to compile module: %w", err)
+	}
+
+	_, err = wasi.Execute(context.Background(), wasi.ExecParams{
+		CompiledModule: mod,
+		Name:           "foo",
+		CacheDir:       "./cache",
 	})
 	if err != nil {
 		return fmt.Errorf("failed to execute wasm: %w", err)
 	}
-
-	_ = os.WriteFile("./result.json", out, 0644)
-
-	fmt.Printf("Successfully returned %d bytes after: %s\n", len(out), time.Since(start).Round(time.Millisecond))
 
 	return nil
 }

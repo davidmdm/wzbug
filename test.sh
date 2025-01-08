@@ -1,20 +1,17 @@
-
 go get github.com/tetratelabs/wazero@v1.6.0
+
 go run .
 
+echo
 echo
 echo "---"
 echo
 
-go get github.com/tetratelabs/wazero@v1.7.3
+go get github.com/tetratelabs/wazero@v1.7.0
 go run .
 
-echo
 echo "---"
 echo
 
-go get github.com/tetratelabs/wazero@v1.8.1
+go get github.com/tetratelabs/wazero@latest
 go run .
-
-
-
